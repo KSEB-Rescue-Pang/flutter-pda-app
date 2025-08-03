@@ -27,6 +27,12 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const LoginPage(),
       );
     },
+    MissionBriefingRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const MissionBriefingScreen(),
+      );
+    },
   };
 }
 
@@ -54,6 +60,20 @@ class LoginRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'LoginRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
+/// [MissionBriefingScreen]
+class MissionBriefingRoute extends PageRouteInfo<void> {
+  const MissionBriefingRoute({List<PageRouteInfo>? children})
+      : super(
+          MissionBriefingRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'MissionBriefingRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
 }
