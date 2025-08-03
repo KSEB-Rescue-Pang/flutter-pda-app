@@ -132,17 +132,6 @@ class _LoginPageState extends State<LoginPage> {
                             onPressed: _handleLogin,
                             isLoading: _isLoading,
                           ),
-
-                          // 테스트용 네비게이션 버튼 (개발 중에만 사용)
-                          const SizedBox(height: 20),
-                          Center(
-                            child: TextButton(
-                              onPressed: () {
-                                context.router.push(const BasicRoute());
-                              },
-                              child: const Text('테스트: Basic Screen으로 이동'),
-                            ),
-                          ),
                         ],
                       ),
                     ),
