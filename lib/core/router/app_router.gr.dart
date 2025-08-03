@@ -21,10 +21,22 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const BasicScreen(),
       );
     },
+    ItemConfirmationRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const ItemConfirmationScreen(),
+      );
+    },
     LoginRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
         child: const LoginPage(),
+      );
+    },
+    MissionBriefingRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const MissionBriefingScreen(),
       );
     },
   };
@@ -45,6 +57,20 @@ class BasicRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [ItemConfirmationScreen]
+class ItemConfirmationRoute extends PageRouteInfo<void> {
+  const ItemConfirmationRoute({List<PageRouteInfo>? children})
+      : super(
+          ItemConfirmationRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'ItemConfirmationRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
 /// [LoginPage]
 class LoginRoute extends PageRouteInfo<void> {
   const LoginRoute({List<PageRouteInfo>? children})
@@ -54,6 +80,20 @@ class LoginRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'LoginRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
+/// [MissionBriefingScreen]
+class MissionBriefingRoute extends PageRouteInfo<void> {
+  const MissionBriefingRoute({List<PageRouteInfo>? children})
+      : super(
+          MissionBriefingRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'MissionBriefingRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
 }

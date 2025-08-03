@@ -1,6 +1,8 @@
 import 'package:auto_route/auto_route.dart';
-import '../../presentation/pages/login_page.dart';
+import '../../presentation/pages/login_screen.dart';
 import '../../presentation/pages/basic_screen.dart';
+import '../../presentation/pages/mission_briefing_screen.dart';
+import '../../presentation/pages/item_confirmation_screen.dart';
 
 part 'app_router.gr.dart';
 
@@ -15,5 +17,11 @@ class AppRouter extends _$AppRouter {
 
     // Basic Screen (QR 스캔 화면)
     AutoRoute(path: '/basic', page: BasicRoute.page),
+
+    // Mission Briefing Screen (진열 물품 리스트 화면)
+    AutoRoute(path: '/mission-briefing', page: MissionBriefingRoute.page),
+
+    // Item Confirmation Screen (물품 확인 화면)
+    AutoRoute(path: '/item-confirmation', page: ItemConfirmationRoute.page),
   ];
 }
