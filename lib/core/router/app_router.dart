@@ -1,0 +1,19 @@
+import 'package:auto_route/auto_route.dart';
+import '../../presentation/pages/login_page.dart';
+import '../../presentation/pages/basic_screen.dart';
+
+part 'app_router.gr.dart';
+
+/// RescuePang 앱의 라우터 설정
+/// AutoRoute를 사용하여 타입 안전한 네비게이션 제공
+@AutoRouterConfig()
+class AppRouter extends _$AppRouter {
+  @override
+  List<AutoRoute> get routes => [
+    // 로그인 페이지 (초기 화면)
+    AutoRoute(path: '/', page: LoginRoute.page, initial: true),
+
+    // Basic Screen (QR 스캔 화면)
+    AutoRoute(path: '/basic', page: BasicRoute.page),
+  ];
+}

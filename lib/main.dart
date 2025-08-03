@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'presentation/pages/login_page.dart';
+import 'core/router/app_router.dart';
+import 'core/theme/app_theme.dart';
 
 void main() {
-  runApp(const RescuePangApp());
+  runApp(RescuePangApp());
 }
 
 class RescuePangApp extends StatelessWidget {
-  const RescuePangApp({super.key});
+  RescuePangApp({super.key});
+
+  final _appRouter = AppRouter();
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'RescuePang',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-        fontFamily: 'Inter',
-      ),
-      home: const LoginPage(),
+      theme: AppTheme.lightTheme,
+      routerConfig: _appRouter.config(),
     );
   }
 }

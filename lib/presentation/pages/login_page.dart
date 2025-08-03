@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
 import '../widgets/rescue_pang_logo.dart';
 import '../widgets/custom_input_field.dart';
 import '../widgets/work_type_dropdown.dart';
 import '../widgets/login_button.dart';
+import '../../core/router/app_router.dart';
 
+/// 로그인 페이지
+/// 사용자 ID와 작업 유형을 입력받아 로그인 처리
+@RoutePage()
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -50,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
           content: Text(
             '${_selectedWorkType == WorkType.inbound ? 'Inbound' : 'Outbound'} 작업으로 로그인되었습니다.',
           ),
-          backgroundColor: AppColors.primaryButton,
+          backgroundColor: AppColors.primary,
         ),
       );
     });
@@ -126,6 +131,17 @@ class _LoginPageState extends State<LoginPage> {
                           LoginButton(
                             onPressed: _handleLogin,
                             isLoading: _isLoading,
+                          ),
+
+                          // 테스트용 네비게이션 버튼 (개발 중에만 사용)
+                          const SizedBox(height: 20),
+                          Center(
+                            child: TextButton(
+                              onPressed: () {
+                                context.router.push(const BasicRoute());
+                              },
+                              child: const Text('테스트: Basic Screen으로 이동'),
+                            ),
                           ),
                         ],
                       ),

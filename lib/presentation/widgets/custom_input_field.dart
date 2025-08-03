@@ -52,12 +52,17 @@ class CustomInputField extends StatelessWidget {
                     decoration: InputDecoration(
                       hintText: hintText,
                       hintStyle: const TextStyle(
-                        color: AppColors.textPlaceholder,
+                        color: AppColors.textSecondary,
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
                         fontFamily: 'Inter',
                       ),
                       border: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      errorBorder: InputBorder.none,
+                      focusedErrorBorder: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
                     ),
                   ),
                 ),

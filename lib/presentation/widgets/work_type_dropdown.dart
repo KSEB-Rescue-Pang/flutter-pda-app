@@ -73,7 +73,7 @@ class _WorkTypeDropdownState extends State<WorkTypeDropdown> {
                             : 'Outbound',
                         style: TextStyle(
                           color: _selectedValue == null
-                              ? AppColors.textPlaceholder
+                              ? AppColors.textSecondary
                               : AppColors.textPrimary,
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
@@ -97,7 +97,7 @@ class _WorkTypeDropdownState extends State<WorkTypeDropdown> {
                       _isExpanded
                           ? Icons.keyboard_arrow_up
                           : Icons.keyboard_arrow_down,
-                      color: AppColors.textPlaceholder,
+                      color: AppColors.textSecondary,
                     ),
                   ],
                 ),

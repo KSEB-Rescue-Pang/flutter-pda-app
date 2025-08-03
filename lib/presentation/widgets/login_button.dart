@@ -18,7 +18,7 @@ class LoginButton extends StatelessWidget {
       width: AppSizes.inputFieldWidth,
       height: AppSizes.inputFieldHeight,
       decoration: BoxDecoration(
-        color: AppColors.primaryButton,
+        color: AppColors.primary,
         borderRadius: BorderRadius.circular(AppSizes.buttonRadius),
       ),
       child: Material(
