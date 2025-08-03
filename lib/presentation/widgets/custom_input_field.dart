@@ -33,41 +33,42 @@ class CustomInputField extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSizes.smallSpacing),
-        Container(
+        SizedBox(
           width: AppSizes.inputFieldWidth,
           height: AppSizes.inputFieldHeight,
-          decoration: BoxDecoration(
-            color: AppColors.inputBackground,
-            borderRadius: BorderRadius.circular(AppSizes.inputFieldRadius),
-            border: Border.all(color: AppColors.inputBorder, width: 1),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: controller,
-                    obscureText: isPassword,
-                    decoration: InputDecoration(
-                      hintText: hintText,
-                      hintStyle: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        fontFamily: 'Inter',
-                      ),
-                      border: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      errorBorder: InputBorder.none,
-                      focusedErrorBorder: InputBorder.none,
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ),
+          child: TextField(
+            controller: controller,
+            obscureText: isPassword,
+            decoration: InputDecoration(
+              hintText: hintText,
+              hintStyle: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                fontFamily: 'Inter',
+              ),
+              filled: true,
+              fillColor: AppColors.inputBackground,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSizes.inputFieldRadius),
+                borderSide: const BorderSide(color: AppColors.inputBorder),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSizes.inputFieldRadius),
+                borderSide: const BorderSide(color: AppColors.inputBorder),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSizes.inputFieldRadius),
+                borderSide: const BorderSide(
+                  color: AppColors.primary,
+                  width: 2,
                 ),
-                if (suffix != null) suffix!,
-              ],
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+              suffixIcon: suffix,
             ),
           ),
         ),
