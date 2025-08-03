@@ -1,5 +1,5 @@
 import 'package:auto_route/auto_route.dart';
-import '../../presentation/pages/login_page.dart';
+import '../../presentation/pages/login_screen.dart';
 import '../../presentation/pages/basic_screen.dart';
 import '../../presentation/pages/mission_briefing_screen.dart';
 import '../../presentation/pages/item_confirmation_screen.dart';
