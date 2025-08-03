@@ -21,6 +21,12 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const BasicScreen(),
       );
     },
+    ItemConfirmationRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const ItemConfirmationScreen(),
+      );
+    },
     LoginRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
@@ -46,6 +52,20 @@ class BasicRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'BasicRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
+/// [ItemConfirmationScreen]
+class ItemConfirmationRoute extends PageRouteInfo<void> {
+  const ItemConfirmationRoute({List<PageRouteInfo>? children})
+      : super(
+          ItemConfirmationRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'ItemConfirmationRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
 }
