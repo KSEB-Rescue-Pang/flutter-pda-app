@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
 
-enum WorkType { inbound, outbound }
+enum WorkType {
+  inbound('IB'),
+  outbound('OB');
+
+  const WorkType(this.value);
+  final String value;
+}
 
 class WorkTypeDropdown extends StatefulWidget {
   final Function(WorkType?) onChanged;
@@ -69,8 +75,8 @@ class _WorkTypeDropdownState extends State<WorkTypeDropdown> {
                         _selectedValue == null
                             ? '작업 유형을 선택하세요'
                             : _selectedValue == WorkType.inbound
-                            ? 'Inbound'
-                            : 'Outbound',
+                            ? 'IB'
+                            : 'OB',
                         style: TextStyle(
                           color: _selectedValue == null
                               ? AppColors.textSecondary
@@ -121,12 +127,12 @@ class _WorkTypeDropdownState extends State<WorkTypeDropdown> {
                 children: [
                   _buildDropdownItem(
                     WorkType.inbound,
-                    'Inbound',
+                    'IB',
                     AppColors.inboundIcon,
                   ),
                   _buildDropdownItem(
                     WorkType.outbound,
-                    'Outbound',
+                    'OB',
                     AppColors.outboundIcon,
                   ),
                 ],
