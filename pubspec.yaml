@@ -37,6 +37,12 @@ dependencies:
   
   # 라우팅 패키지
   auto_route: ^7.8.4
+  
+  # HTTP 클라이언트
+  http: ^1.1.0
+  
+  # 로컬 저장소
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:

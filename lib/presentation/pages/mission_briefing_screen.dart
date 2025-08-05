@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
+import '../../core/router/app_router.dart';
+import '../../core/services/user_storage_service.dart';
+import '../../core/models/task_model.dart';
 
 /// Mission Briefing Screen - 진열 물품 리스트 화면
 /// 작업 시작 전 물품 목록을 확인하는 화면
@@ -14,18 +17,56 @@ class MissionBriefingScreen extends StatefulWidget {
 }
 
 class _MissionBriefingScreenState extends State<MissionBriefingScreen> {
-  // 샘플 물품 데이터
-  final List<Map<String, dynamic>> _items = [
-    {
-      'name': '노트북 컴퓨터',
-      'quantity': 5,
-      'imageUrl': null, // 실제 이미지 URL로 교체 가능
-    },
-    {'name': '스마트폰', 'quantity': 12, 'imageUrl': null},
-    {'name': '태블릿 PC', 'quantity': 8, 'imageUrl': null},
-  ];
-
+  List<Task> _tasks = [];
   bool _isLoading = false;
+  String _workType = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTasks();
+    _loadWorkType();
+  }
+
+  /// 저장된 태스크 데이터 로드
+  Future<void> _loadTasks() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final tasks = await UserStorageService.getTasks();
+      setState(() {
+        _tasks = tasks;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      print('태스크 로드 오류: $e');
+    }
+  }
+
+  /// 작업 타입 로드
+  Future<void> _loadWorkType() async {
+    final workType = await UserStorageService.getWorkType();
+    setState(() {
+      _workType = workType ?? '';
+    });
+  }
+
+  /// 작업 타입에 따른 제목 반환
+  String get _getTitle {
+    switch (_workType) {
+      case 'IB':
+        return '진열 물품 리스트';
+      case 'OB':
+        return '집품 물품 리스트';
+      default:
+        return '물품 리스트';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,10 +81,7 @@ class _MissionBriefingScreenState extends State<MissionBriefingScreen> {
               const SizedBox(height: 20.0),
 
               // 헤더 제목
-              Text(
-                '진열 물품 리스트',
-                style: Theme.of(context).textTheme.headlineLarge,
-              ),
+              Text(_getTitle, style: Theme.of(context).textTheme.headlineLarge),
 
               const SizedBox(height: 20.0),
 
@@ -57,10 +95,10 @@ class _MissionBriefingScreenState extends State<MissionBriefingScreen> {
                   ),
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16.0),
-                    itemCount: _items.length,
+                    itemCount: _tasks.length,
                     itemBuilder: (context, index) {
-                      final item = _items[index];
-                      return _buildItemCard(item);
+                      final task = _tasks[index];
+                      return _buildItemCard(task);
                     },
                   ),
                 ),
@@ -112,7 +150,7 @@ class _MissionBriefingScreenState extends State<MissionBriefingScreen> {
   }
 
   /// 물품 카드 위젯
-  Widget _buildItemCard(Map<String, dynamic> item) {
+  Widget _buildItemCard(Task task) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16.0),
       padding: const EdgeInsets.all(16.0),
@@ -131,10 +169,10 @@ class _MissionBriefingScreenState extends State<MissionBriefingScreen> {
               color: const Color(0xFFF2F2F2),
               borderRadius: BorderRadius.circular(8.0),
             ),
-            child: item['imageUrl'] != null
+            child: task.img.isNotEmpty
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(8.0),
-                    child: Image.network(item['imageUrl'], fit: BoxFit.cover),
+                    child: Image.network(task.img, fit: BoxFit.cover),
                   )
                 : const Icon(
                     Icons.inventory_2_outlined,
@@ -151,7 +189,7 @@ class _MissionBriefingScreenState extends State<MissionBriefingScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item['name'],
+                  task.name,
                   style: const TextStyle(
                     fontSize: 16.0,
                     fontWeight: FontWeight.w600,
@@ -160,9 +198,18 @@ class _MissionBriefingScreenState extends State<MissionBriefingScreen> {
                 ),
                 const SizedBox(height: 8.0),
                 Text(
-                  '수량: ${item['quantity']}개',
+                  '수량: ${task.quantity}개',
                   style: const TextStyle(
                     fontSize: 14.0,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 4.0),
+                Text(
+                  '위치: ${task.targetLocationId}',
+                  style: const TextStyle(
+                    fontSize: 12.0,
                     fontWeight: FontWeight.w400,
                     color: AppColors.textSecondary,
                   ),
@@ -182,12 +229,21 @@ class _MissionBriefingScreenState extends State<MissionBriefingScreen> {
     });
 
     try {
-      // TODO: 작업 시작 로직 구현
-      await Future.delayed(const Duration(seconds: 2)); // 임시 딜레이
+      // 첫 번째 태스크가 있는지 확인
+      if (_tasks.isEmpty) {
+        throw Exception('진행할 태스크가 없습니다.');
+      }
+
+      // 첫 번째 태스크의 위치를 목표 위치로 설정
+      final firstTask = _tasks[0];
+      await UserStorageService.saveCurrentProgress(
+        taskIndex: 0,
+        targetLocation: firstTask.targetLocationId,
+      );
 
       if (mounted) {
-        // TODO: 다음 화면으로 네비게이션
-        print('작업이 시작되었습니다.');
+        print('작업이 시작되었습니다. 목표 위치: ${firstTask.targetLocationId}');
+        context.router.push(BasicRoute(reqType: 'navigate'));
       }
     } catch (e) {
       if (mounted) {

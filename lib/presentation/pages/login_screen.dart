@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/router/app_router.dart';
+import 'basic_screen.dart';
 import '../../core/constants/app_sizes.dart';
 import '../widgets/rescue_pang_logo.dart';
 import '../widgets/custom_input_field.dart';
 import '../widgets/work_type_dropdown.dart';
 import '../widgets/login_button.dart';
-import '../../core/router/app_router.dart';
+import '../../core/services/worker_api_service.dart';
+import '../../core/services/user_storage_service.dart';
+import '../../core/exceptions/api_exception.dart';
 
 /// 로그인 페이지
 /// 사용자 ID와 작업 유형을 입력받아 로그인 처리
@@ -29,7 +33,7 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void _handleLogin() {
+  void _handleLogin() async {
     if (_userIdController.text.isEmpty || _selectedWorkType == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -44,21 +48,49 @@ class _LoginPageState extends State<LoginPage> {
       _isLoading = true;
     });
 
-    // 로그인 로직 시뮬레이션
-    Future.delayed(const Duration(seconds: 2), () {
+    try {
+      // API 호출
+      final workType = _selectedWorkType!.value; // IB 또는 OB
+      final workerId = _userIdController.text.trim();
+
+      await WorkerApiService.registerWorker(workType, workerId);
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        // 로그인 성공 시 사용자 정보 저장
+        await UserStorageService.saveUserInfo(workType, workerId);
+
+        // 스캔 화면으로 이동
+        context.router.replace(BasicRoute(reqType: 'scan'));
+      }
+    } on NetworkException catch (e) {
       setState(() {
         _isLoading = false;
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '${_selectedWorkType == WorkType.inbound ? 'Inbound' : 'Outbound'} 작업으로 로그인되었습니다.',
-          ),
-          backgroundColor: AppColors.primary,
-        ),
+        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
       );
-    });
+    } on ServerException catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
+      );
+    } on ApiException catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
+      );
+    }
   }
 
   @override
