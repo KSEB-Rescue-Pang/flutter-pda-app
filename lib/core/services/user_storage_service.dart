@@ -79,4 +79,33 @@ class UserStorageService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tasksKey);
   }
+
+  /// 현재 진행 상태 저장
+  static Future<void> saveCurrentProgress({
+    required int taskIndex,
+    required String targetLocation,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('current_task_index', taskIndex);
+    await prefs.setString('target_location', targetLocation);
+  }
+
+  /// 현재 태스크 인덱스 가져오기
+  static Future<int> getCurrentTaskIndex() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('current_task_index') ?? 0;
+  }
+
+  /// 현재 목표 위치 가져오기
+  static Future<String?> getTargetLocation() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('target_location');
+  }
+
+  /// 진행 상태 초기화
+  static Future<void> clearProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('current_task_index');
+    await prefs.remove('target_location');
+  }
 }

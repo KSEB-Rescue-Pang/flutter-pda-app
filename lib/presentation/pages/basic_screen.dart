@@ -10,6 +10,7 @@ import '../../core/router/app_router.dart';
 /// 스캔 화면 타입 정의
 enum ReqType {
   scan('토트박스를 스캔해주세요', 'QR코드 스캔'),
+  navigate('', '도착완료'), // 메시지는 동적으로 결정
   custom('', ''); // 커스텀 타입
 
   const ReqType(this.message, this.buttonText);
@@ -28,6 +29,8 @@ enum ReqType {
     if (path.contains('scan')) {
       return ReqType.scan;
     }
+    if (path.contains('navigate')) return ReqType.navigate;
+
     return ReqType.scan; // 기본값
   }
 
@@ -36,6 +39,8 @@ enum ReqType {
     if (reqTypeParam == null) return ReqType.scan;
 
     switch (reqTypeParam.toLowerCase()) {
+      case 'navigate':
+        return ReqType.navigate;
       default:
         return ReqType.scan;
     }
@@ -88,6 +93,33 @@ class BasicScreen extends StatefulWidget {
 class _BasicScreenState extends State<BasicScreen> {
   bool _isLoading = false;
   String? _errorMessage;
+  String? _targetLocation;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTargetLocation();
+  }
+
+  /// 목표 위치 로드
+  Future<void> _loadTargetLocation() async {
+    final targetLocation = await UserStorageService.getTargetLocation();
+    setState(() {
+      _targetLocation = targetLocation;
+    });
+    print('목표 위치: $_targetLocation');
+  }
+
+  /// 동적 메시지 생성
+  String _getDisplayMessage() {
+    final type = widget.getEffectiveScanType(context);
+
+    if (type == ReqType.navigate && _targetLocation != null) {
+      return '$_targetLocation로 이동하세요';
+    }
+
+    return type.message;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +135,7 @@ class _BasicScreenState extends State<BasicScreen> {
               // 스캔 메시지 - 테마의 headlineLarge 사용
               Center(
                 child: Text(
-                  widget.getDisplayMessage(context), // 라우트 기반 메시지 사용
+                  _getDisplayMessage(), // 동적 메시지 사용
                   style: Theme.of(context).textTheme.headlineLarge,
                   textAlign: TextAlign.center,
                 ),
@@ -218,12 +250,12 @@ class _BasicScreenState extends State<BasicScreen> {
       // 성공 시 처리
       if (mounted) {
         // TODO: 스캔 결과에 따른 네비게이션 처리
-        print('스캔이 완료되었습니다.');
+        print('버튼이 눌렸습니다');
       }
     } catch (e) {
       // 에러 처리
       if (mounted) {
-        String errorMessage = '스캔 중 오류가 발생했습니다.';
+        String errorMessage = '오류가 발생했습니다.';
 
         if (e is ApiException) {
           errorMessage = e.message;

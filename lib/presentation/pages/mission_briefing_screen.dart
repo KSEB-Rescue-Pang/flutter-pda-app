@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_sizes.dart';
+import '../../core/router/app_router.dart';
 import '../../core/services/user_storage_service.dart';
 import '../../core/models/task_model.dart';
 
@@ -228,12 +229,21 @@ class _MissionBriefingScreenState extends State<MissionBriefingScreen> {
     });
 
     try {
-      // TODO: 작업 시작 로직 구현
-      await Future.delayed(const Duration(seconds: 2)); // 임시 딜레이
+      // 첫 번째 태스크가 있는지 확인
+      if (_tasks.isEmpty) {
+        throw Exception('진행할 태스크가 없습니다.');
+      }
+
+      // 첫 번째 태스크의 위치를 목표 위치로 설정
+      final firstTask = _tasks[0];
+      await UserStorageService.saveCurrentProgress(
+        taskIndex: 0,
+        targetLocation: firstTask.targetLocationId,
+      );
 
       if (mounted) {
-        // TODO: 다음 화면으로 네비게이션
-        print('작업이 시작되었습니다.');
+        print('작업이 시작되었습니다. 목표 위치: ${firstTask.targetLocationId}');
+        context.router.push(BasicRoute(reqType: 'navigate'));
       }
     } catch (e) {
       if (mounted) {
