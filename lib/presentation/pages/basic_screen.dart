@@ -10,7 +10,7 @@ import '../../core/router/app_router.dart';
 /// 스캔 화면 타입 정의
 enum ReqType {
   scan('토트박스를 스캔해주세요', 'QR코드 스캔'),
-  navigate('', '도착완료'), // 메시지는 동적으로 결정
+  navigate('', '도착 완료'), // 메시지는 동적으로 결정
   custom('', ''); // 커스텀 타입
 
   const ReqType(this.message, this.buttonText);
