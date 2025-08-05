@@ -64,7 +64,7 @@ class _LoginPageState extends State<LoginPage> {
         await UserStorageService.saveUserInfo(workType, workerId);
 
         // 스캔 화면으로 이동
-        context.router.push(BasicRoute(reqType: 'scan'));
+        context.router.replace(BasicRoute(reqType: 'scan'));
       }
     } on NetworkException catch (e) {
       setState(() {

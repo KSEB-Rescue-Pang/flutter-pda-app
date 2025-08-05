@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/services/user_storage_service.dart';
+import '../../core/services/worker_api_service.dart';
+import '../../core/models/task_model.dart';
+import '../../core/exceptions/api_exception.dart';
+import '../../core/router/app_router.dart';
 
 /// Item Confirmation Screen - 물품 확인 화면
 /// 스캔된 물품의 정보를 확인하고 작업을 진행하는 화면
@@ -13,14 +18,45 @@ class ItemConfirmationScreen extends StatefulWidget {
 }
 
 class _ItemConfirmationScreenState extends State<ItemConfirmationScreen> {
-  // 샘플 제품 데이터
-  final Map<String, dynamic> _product = {
-    'name': '노트북 컴퓨터',
-    'quantity': 5,
-    'imageUrl': null, // 실제 이미지 URL로 교체 가능
-  };
-
+  Task? _currentTask;
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentTask();
+  }
+
+  /// 현재 태스크 로드
+  Future<void> _loadCurrentTask() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // 태스크 리스트와 현재 인덱스 가져오기
+      final tasks = await UserStorageService.getTasks();
+      final currentTaskIndex = await UserStorageService.getCurrentTaskIndex();
+
+      if (tasks.isNotEmpty && currentTaskIndex < tasks.length) {
+        setState(() {
+          _currentTask = tasks[currentTaskIndex];
+          _isLoading = false;
+        });
+        print('현재 태스크: ${_currentTask!.name} (${_currentTask!.quantity}개)');
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+        print('진행할 태스크가 없습니다.');
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      print('태스크 로드 오류: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,11 +99,8 @@ class _ItemConfirmationScreenState extends State<ItemConfirmationScreen> {
                       width: double.infinity,
                       height: double.infinity,
                       color: const Color(0xFFF2F2F2),
-                      child: _product['imageUrl'] != null
-                          ? Image.network(
-                              _product['imageUrl'],
-                              fit: BoxFit.cover,
-                            )
+                      child: _currentTask?.img.isNotEmpty == true
+                          ? Image.network(_currentTask!.img, fit: BoxFit.cover)
                           : const Icon(
                               Icons.laptop_mac_outlined,
                               color: AppColors.textSecondary,
@@ -96,7 +129,7 @@ class _ItemConfirmationScreenState extends State<ItemConfirmationScreen> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 12.0),
                       child: Text(
-                        _product['name'],
+                        _currentTask?.name ?? '로딩 중...',
                         style: TextStyle(
                           fontSize: screenSize.width * 0.06, // 반응형 폰트 크기
                           fontWeight: FontWeight.w700,
@@ -129,7 +162,7 @@ class _ItemConfirmationScreenState extends State<ItemConfirmationScreen> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10.0),
                       child: Text(
-                        '남은 수량: ${_product['quantity']}개',
+                        '수량: ${_currentTask?.quantity ?? 0}개',
                         style: TextStyle(
                           fontSize: screenSize.width * 0.045, // 반응형 폰트 크기
                           fontWeight: FontWeight.w600,
@@ -196,12 +229,56 @@ class _ItemConfirmationScreenState extends State<ItemConfirmationScreen> {
     });
 
     try {
-      // TODO: 확인 로직 구현
-      await Future.delayed(const Duration(seconds: 2)); // 임시 딜레이
+      // 사용자 정보 가져오기
+      final userInfo = await UserStorageService.getUserInfo();
+      final workType = userInfo['workType'] ?? 'IB';
+      final workerId = userInfo['workerId'] ?? '1234';
 
-      if (mounted) {
-        // TODO: 다음 화면으로 네비게이션 또는 작업 완료 처리
-        print('물품 확인이 완료되었습니다.');
+      print('작업 완료 보고 시작: $workType/$workerId');
+
+      // 작업 완료 API 호출
+      final success = await WorkerApiService.finishWork(workType, workerId);
+
+      if (success && mounted) {
+        print('작업 완료 보고 성공');
+
+        // 현재 태스크 인덱스 증가
+        final currentTaskIndex = await UserStorageService.getCurrentTaskIndex();
+        final tasks = await UserStorageService.getTasks();
+
+        if (currentTaskIndex < tasks.length - 1) {
+          // 다음 태스크가 있는 경우
+          final nextTaskIndex = currentTaskIndex + 1;
+          final nextTask = tasks[nextTaskIndex];
+
+          // 다음 태스크의 목표 위치가 현재와 다른지 확인
+          final currentTargetLocation =
+              await UserStorageService.getTargetLocation();
+
+          if (nextTask.targetLocationId != currentTargetLocation) {
+            // 다른 위치로 이동해야 하는 경우
+            await UserStorageService.saveCurrentProgress(
+              taskIndex: nextTaskIndex,
+              targetLocation: nextTask.targetLocationId,
+            );
+
+            // Basic Screen으로 이동 (새로운 목표 위치 표시)
+            context.router.replace(BasicRoute(reqType: 'navigate'));
+          } else {
+            // 같은 위치에서 다음 태스크 처리
+            await UserStorageService.saveCurrentProgress(
+              taskIndex: nextTaskIndex,
+              targetLocation: nextTask.targetLocationId,
+            );
+
+            // 같은 화면에서 다음 태스크 로드
+            await _loadCurrentTask();
+          }
+        } else {
+          // 모든 태스크 완료
+          print('모든 태스크가 완료되었습니다.');
+          context.router.replace(BasicRoute(reqType: 'scan'));
+        }
 
         // 성공 메시지 표시
         ScaffoldMessenger.of(context).showSnackBar(
@@ -213,11 +290,18 @@ class _ItemConfirmationScreenState extends State<ItemConfirmationScreen> {
       }
     } catch (e) {
       if (mounted) {
+        String errorMessage = '확인 중 오류가 발생했습니다.';
+
+        if (e is ApiException) {
+          errorMessage = e.message;
+        } else if (e is NetworkException) {
+          errorMessage = e.message;
+        } else if (e is ServerException) {
+          errorMessage = e.message;
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('확인 중 오류가 발생했습니다: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
         );
       }
     } finally {

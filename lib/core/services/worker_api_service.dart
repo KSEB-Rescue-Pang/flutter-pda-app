@@ -79,4 +79,36 @@ class WorkerApiService {
       throw ApiException(message: '알 수 없는 오류가 발생했습니다.');
     }
   }
+
+  /// 작업 완료 보고 API 호출
+  ///
+  /// [workType] - 작업 유형 (IB 또는 OB)
+  /// [workerId] - 작업자 ID
+  ///
+  /// Returns: 성공 시 true, 실패 시 ApiException 발생
+  static Future<bool> finishWork(String workType, String workerId) async {
+    try {
+      final url = Uri.parse('${ApiConfig.baseUrl}/$workType/$workerId/finish');
+
+      final response = await http
+          .post(url, headers: {'Content-Type': 'application/json'})
+          .timeout(Duration(seconds: ApiConfig.timeoutSeconds));
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        throw ServerException(
+          message: '작업 완료 보고에 실패했습니다.',
+          statusCode: response.statusCode,
+          responseBody: response.body,
+        );
+      }
+    } on http.ClientException {
+      throw NetworkException(message: '네트워크 연결을 확인해주세요.');
+    } on SocketException {
+      throw NetworkException(message: '인터넷 연결을 확인해주세요.');
+    } catch (e) {
+      throw ApiException(message: '알 수 없는 오류가 발생했습니다.');
+    }
+  }
 }

@@ -94,10 +94,13 @@ class _BasicScreenState extends State<BasicScreen> {
   bool _isLoading = false;
   String? _errorMessage;
   String? _targetLocation;
+  String _workType = 'IB';
+  String _workerId = '1234';
 
   @override
   void initState() {
     super.initState();
+    _loadUserInfo();
     _loadTargetLocation();
   }
 
@@ -108,6 +111,23 @@ class _BasicScreenState extends State<BasicScreen> {
       _targetLocation = targetLocation;
     });
     print('목표 위치: $_targetLocation');
+  }
+
+  /// 사용자 정보 가져오기
+  Future<Map<String, String>> _getUserInfo() async {
+    final userInfo = await UserStorageService.getUserInfo();
+    return {
+      'workType': userInfo['workType'] ?? 'IB',
+      'workerId': userInfo['workerId'] ?? '1234',
+    };
+  }
+
+  Future<void> _loadUserInfo() async {
+    final userInfo = await _getUserInfo();
+    setState(() {
+      _workType = userInfo['workType']!;
+      _workerId = userInfo['workerId']!;
+    });
   }
 
   /// 동적 메시지 생성
@@ -241,16 +261,12 @@ class _BasicScreenState extends State<BasicScreen> {
           // 토트박스 스캔 API 호출
           print('토트박스 스캔 시작');
           await _handleToteBoxScan();
+        } else if (currentType == ReqType.navigate) {
+          await _handleNavigate();
         } else {
-          // TODO: 다른 스캔 기능 구현
+          // TODO: 다른 기능 구현
           await Future.delayed(const Duration(seconds: 2)); // 임시 딜레이
         }
-      }
-
-      // 성공 시 처리
-      if (mounted) {
-        // TODO: 스캔 결과에 따른 네비게이션 처리
-        print('버튼이 눌렸습니다');
       }
     } catch (e) {
       // 에러 처리
@@ -282,14 +298,12 @@ class _BasicScreenState extends State<BasicScreen> {
   /// 토트박스 스캔 처리
   Future<void> _handleToteBoxScan() async {
     // 저장된 사용자 정보 가져오기
-    final userInfo = await UserStorageService.getUserInfo();
-    final workType = userInfo['workType'] ?? 'IB';
-    final workerId = userInfo['workerId'] ?? '1234';
+
     final toteId = 'TOTE-001';
 
     final result = await WorkerApiService.scanToteBox(
-      workType,
-      workerId,
+      _workType,
+      _workerId,
       toteId,
     );
 
@@ -304,7 +318,43 @@ class _BasicScreenState extends State<BasicScreen> {
 
     // Mission Briefing Screen으로 이동
     if (mounted) {
-      context.router.push(MissionBriefingRoute());
+      context.router.replace(MissionBriefingRoute());
+    }
+  }
+
+  Future<void> _handleNavigate() async {
+    print('workType: $_workType');
+    print('workerId: $_workerId');
+    print('도착 완료');
+
+    try {
+      // 현재 태스크 리스트 가져오기
+      final tasks = await UserStorageService.getTasks();
+
+      if (tasks.isEmpty) {
+        print('진행할 태스크가 없습니다.');
+        return;
+      }
+
+      // 현재 진행 중인 태스크 인덱스 가져오기
+      final currentTaskIndex = await UserStorageService.getCurrentTaskIndex();
+
+      if (currentTaskIndex >= tasks.length) {
+        print('모든 태스크가 완료되었습니다.');
+        // TODO: 작업 완료 화면으로 이동
+        return;
+      }
+
+      // 현재 태스크 가져오기
+      final currentTask = tasks[currentTaskIndex];
+      print('현재 태스크: ${currentTask.name} (${currentTask.quantity}개)');
+
+      // Item Confirmation Screen으로 이동
+      if (mounted) {
+        context.router.push(ItemConfirmationRoute());
+      }
+    } catch (e) {
+      print('태스크 처리 중 오류: $e');
     }
   }
 }
