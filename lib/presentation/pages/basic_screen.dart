@@ -4,6 +4,8 @@ import '../../core/constants/app_colors.dart';
 import '../../core/services/worker_api_service.dart';
 import '../../core/services/user_storage_service.dart';
 import '../../core/exceptions/api_exception.dart';
+import '../../core/models/task_model.dart';
+import '../../core/router/app_router.dart';
 
 /// 스캔 화면 타입 정의
 enum ReqType {
@@ -205,6 +207,7 @@ class _BasicScreenState extends State<BasicScreen> {
 
         if (currentType == ReqType.scan) {
           // 토트박스 스캔 API 호출
+          print('토트박스 스캔 시작');
           await _handleToteBoxScan();
         } else {
           // TODO: 다른 스캔 기능 구현
@@ -258,10 +261,18 @@ class _BasicScreenState extends State<BasicScreen> {
       toteId,
     );
 
-    // 성공적으로 스캔된 경우 응답 데이터 처리
-    print('토트박스 스캔 성공: $result');
+    print('토트박스 스캔 성공: ${result}');
+    // 응답 데이터를 모델로 파싱
+    final scanResponse = ToteBoxScanResponse.fromJson(result);
 
-    // TODO: 스캔 결과에 따른 다음 화면으로 이동
-    // 예: 물품 리스트 화면으로 이동
+    // 태스크 데이터를 SharedPreferences에 저장
+    await UserStorageService.saveTasks(scanResponse.tasks);
+
+    print('토트박스 스캔 성공: ${scanResponse.tasks.length}개 작업');
+
+    // Mission Briefing Screen으로 이동
+    if (mounted) {
+      context.router.push(MissionBriefingRoute());
+    }
   }
 }
