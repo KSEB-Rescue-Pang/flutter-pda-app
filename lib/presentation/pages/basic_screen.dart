@@ -4,7 +4,7 @@ import '../../core/constants/app_colors.dart';
 
 /// 스캔 화면 타입 정의
 enum ReqType {
-  totebox('토트박스를 스캔해주세요', 'QR코드 스캔'),
+  scan('토트박스를 스캔해주세요', 'QR코드 스캔'),
   custom('', ''); // 커스텀 타입
 
   const ReqType(this.message, this.buttonText);
@@ -17,24 +17,23 @@ enum ReqType {
 
   /// 라우트 경로에서 스캔 타입을 매핑
   static ReqType fromRoute(String? routePath) {
-    if (routePath == null) return ReqType.totebox;
+    if (routePath == null) return ReqType.scan;
     // 경로에 포함된 키워드로 타입 결정
     final path = routePath.toLowerCase();
 
     if (path.contains('totebox') || path.contains('tote')) {
-      return ReqType.totebox;
+      return ReqType.scan;
     }
-
-    return ReqType.totebox; // 기본값
+    return ReqType.scan; // 기본값
   }
 
   /// 스캔 타입 파라미터에서 스캔 타입을 매핑
-  static ReqType fromParameter(String? scanTypeParam) {
-    if (scanTypeParam == null) return ReqType.totebox;
+  static ReqType fromParameter(String? reqTypeParam) {
+    if (reqTypeParam == null) return ReqType.scan;
 
-    switch (scanTypeParam.toLowerCase()) {
+    switch (reqTypeParam.toLowerCase()) {
       default:
-        return ReqType.totebox;
+        return ReqType.scan;
     }
   }
 }
@@ -44,42 +43,27 @@ enum ReqType {
 /// 라우팅 경로에 따라 자동으로 스캔 타입이 결정됨
 @RoutePage()
 class BasicScreen extends StatefulWidget {
-  final String? scanTypeParam; // 라우트 파라미터로 받는 스캔 타입
-  final ReqType? scanType; // 직접 지정하는 스캔 타입 (우선순위 높음)
-  final String? customMessage; // 커스텀 메시지
-  final String? customButtonText; // 커스텀 버튼 텍스트
+  final String? reqType; // 라우트 파라미터로 받는 스캔 타입 (경로에서 :reqType)
+  final ReqType? directReqType; // 직접 지정하는 스캔 타입 (우선순위 높음)
   final Function()? onScanPressed; // 스캔 버튼 클릭 시 콜백
 
   const BasicScreen({
     super.key,
-    this.scanTypeParam, // 라우트에서 받는 파라미터
-    this.scanType,
-    this.customMessage,
-    this.customButtonText,
+    @pathParam this.reqType, // 라우트에서 받는 파라미터
+    this.directReqType,
     this.onScanPressed,
   });
-
-  /// 커스텀 생성자
-  const BasicScreen.custom({
-    super.key,
-    required String message,
-    required String buttonText,
-    this.onScanPressed,
-  }) : scanTypeParam = null,
-       scanType = ReqType.custom,
-       customMessage = message,
-       customButtonText = buttonText;
 
   /// 실제 사용할 스캔 타입을 결정
   ReqType getEffectiveScanType(BuildContext context) {
     // 1. 직접 지정된 scanType이 있으면 우선 사용
-    if (scanType != null) {
-      return scanType!;
+    if (directReqType != null) {
+      return directReqType!;
     }
 
     // 2. 라우트 파라미터에서 결정
-    if (scanTypeParam != null) {
-      return ReqType.fromParameter(scanTypeParam!);
+    if (reqType != null) {
+      return ReqType.fromParameter(reqType!);
     }
 
     // 3. 현재 라우트 경로에서 결정
@@ -88,25 +72,19 @@ class BasicScreen extends StatefulWidget {
       return ReqType.fromRoute(routePath);
     } catch (e) {
       // 라우트 정보를 가져올 수 없는 경우
-      return ReqType.totebox;
+      return ReqType.scan;
     }
   }
 
   /// 실제 표시될 메시지를 반환
   String getDisplayMessage(BuildContext context) {
     final type = getEffectiveScanType(context);
-    if (type == ReqType.custom) {
-      return customMessage ?? '';
-    }
     return type.message;
   }
 
   /// 실제 표시될 버튼 텍스트를 반환
   String getDisplayButtonText(BuildContext context) {
     final type = getEffectiveScanType(context);
-    if (type == ReqType.custom) {
-      return customButtonText ?? '';
-    }
     return type.buttonText;
   }
 

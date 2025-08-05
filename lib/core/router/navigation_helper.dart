@@ -12,12 +12,12 @@ class NavigationHelper {
 
   /// Basic Screen으로 이동
   static void navigateToBasicScreen(BuildContext context) {
-    context.router.push(const BasicRoute());
+    context.router.push(BasicRoute());
   }
 
   /// Basic Screen으로 이동 (이전 페이지 교체)
   static void replaceWithBasicScreen(BuildContext context) {
-    context.router.replace(const BasicRoute());
+    context.router.replace(BasicRoute());
   }
 
   /// 이전 페이지로 돌아가기

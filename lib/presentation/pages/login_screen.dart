@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
+import 'package:rescuepang_pda/presentation/pages/basic_screen.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/router/app_router.dart';
 import '../../core/constants/app_sizes.dart';
 import '../widgets/rescue_pang_logo.dart';
 import '../widgets/custom_input_field.dart';
@@ -52,17 +54,12 @@ class _LoginPageState extends State<LoginPage> {
 
       await WorkerApiService.registerWorker(workType, workerId);
 
-      setState(() {
-        _isLoading = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${_selectedWorkType!.value} 작업으로 로그인되었습니다.'),
-          backgroundColor: AppColors.primary,
-        ),
-      );
-      // TODO: 로그인 성공 후 다음 화면으로 이동
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        context.router.push(BasicRoute(reqType: 'scan'));
+      }
     } on NetworkException catch (e) {
       setState(() {
         _isLoading = false;

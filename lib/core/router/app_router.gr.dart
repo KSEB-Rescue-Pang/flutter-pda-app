@@ -16,9 +16,18 @@ abstract class _$AppRouter extends RootStackRouter {
   @override
   final Map<String, PageFactory> pagesMap = {
     BasicRoute.name: (routeData) {
+      final pathParams = routeData.inheritedPathParams;
+      final args = routeData.argsAs<BasicRouteArgs>(
+          orElse: () =>
+              BasicRouteArgs(reqType: pathParams.optString('reqType')));
       return AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const BasicScreen(),
+        child: BasicScreen(
+          key: args.key,
+          reqType: args.reqType,
+          directReqType: args.directReqType,
+          onScanPressed: args.onScanPressed,
+        ),
       );
     },
     ItemConfirmationRoute.name: (routeData) {
@@ -44,16 +53,50 @@ abstract class _$AppRouter extends RootStackRouter {
 
 /// generated route for
 /// [BasicScreen]
-class BasicRoute extends PageRouteInfo<void> {
-  const BasicRoute({List<PageRouteInfo>? children})
-      : super(
+class BasicRoute extends PageRouteInfo<BasicRouteArgs> {
+  BasicRoute({
+    Key? key,
+    String? reqType,
+    ReqType? directReqType,
+    dynamic Function()? onScanPressed,
+    List<PageRouteInfo>? children,
+  }) : super(
           BasicRoute.name,
+          args: BasicRouteArgs(
+            key: key,
+            reqType: reqType,
+            directReqType: directReqType,
+            onScanPressed: onScanPressed,
+          ),
+          rawPathParams: {'reqType': reqType},
           initialChildren: children,
         );
 
   static const String name = 'BasicRoute';
 
-  static const PageInfo<void> page = PageInfo<void>(name);
+  static const PageInfo<BasicRouteArgs> page = PageInfo<BasicRouteArgs>(name);
+}
+
+class BasicRouteArgs {
+  const BasicRouteArgs({
+    this.key,
+    this.reqType,
+    this.directReqType,
+    this.onScanPressed,
+  });
+
+  final Key? key;
+
+  final String? reqType;
+
+  final ReqType? directReqType;
+
+  final dynamic Function()? onScanPressed;
+
+  @override
+  String toString() {
+    return 'BasicRouteArgs{key: $key, reqType: $reqType, directReqType: $directReqType, onScanPressed: $onScanPressed}';
+  }
 }
 
 /// generated route for
