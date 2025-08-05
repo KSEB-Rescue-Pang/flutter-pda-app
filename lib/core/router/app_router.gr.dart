@@ -25,8 +25,7 @@ abstract class _$AppRouter extends RootStackRouter {
         child: BasicScreen(
           key: args.key,
           reqType: args.reqType,
-          directReqType: args.directReqType,
-          onScanPressed: args.onScanPressed,
+          onButtonPressed: args.onButtonPressed,
         ),
       );
     },
@@ -57,16 +56,14 @@ class BasicRoute extends PageRouteInfo<BasicRouteArgs> {
   BasicRoute({
     Key? key,
     String? reqType,
-    ReqType? directReqType,
-    dynamic Function()? onScanPressed,
+    dynamic Function()? onButtonPressed,
     List<PageRouteInfo>? children,
   }) : super(
           BasicRoute.name,
           args: BasicRouteArgs(
             key: key,
             reqType: reqType,
-            directReqType: directReqType,
-            onScanPressed: onScanPressed,
+            onButtonPressed: onButtonPressed,
           ),
           rawPathParams: {'reqType': reqType},
           initialChildren: children,
@@ -81,21 +78,18 @@ class BasicRouteArgs {
   const BasicRouteArgs({
     this.key,
     this.reqType,
-    this.directReqType,
-    this.onScanPressed,
+    this.onButtonPressed,
   });
 
   final Key? key;
 
   final String? reqType;
 
-  final ReqType? directReqType;
-
-  final dynamic Function()? onScanPressed;
+  final dynamic Function()? onButtonPressed;
 
   @override
   String toString() {
-    return 'BasicRouteArgs{key: $key, reqType: $reqType, directReqType: $directReqType, onScanPressed: $onScanPressed}';
+    return 'BasicRouteArgs{key: $key, reqType: $reqType, onButtonPressed: $onButtonPressed}';
   }
 }
 

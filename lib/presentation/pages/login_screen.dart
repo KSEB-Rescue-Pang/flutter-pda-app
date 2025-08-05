@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:rescuepang_pda/presentation/pages/basic_screen.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/router/app_router.dart';
+import 'basic_screen.dart';
 import '../../core/constants/app_sizes.dart';
 import '../widgets/rescue_pang_logo.dart';
 import '../widgets/custom_input_field.dart';
 import '../widgets/work_type_dropdown.dart';
 import '../widgets/login_button.dart';
 import '../../core/services/worker_api_service.dart';
+import '../../core/services/user_storage_service.dart';
 import '../../core/exceptions/api_exception.dart';
 
 /// 로그인 페이지
@@ -58,6 +59,11 @@ class _LoginPageState extends State<LoginPage> {
         setState(() {
           _isLoading = false;
         });
+
+        // 로그인 성공 시 사용자 정보 저장
+        await UserStorageService.saveUserInfo(workType, workerId);
+
+        // 스캔 화면으로 이동
         context.router.push(BasicRoute(reqType: 'scan'));
       }
     } on NetworkException catch (e) {

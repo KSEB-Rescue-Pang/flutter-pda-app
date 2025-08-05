@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/services/worker_api_service.dart';
+import '../../core/services/user_storage_service.dart';
+import '../../core/exceptions/api_exception.dart';
 
 /// 스캔 화면 타입 정의
 enum ReqType {
@@ -20,8 +23,7 @@ enum ReqType {
     if (routePath == null) return ReqType.scan;
     // 경로에 포함된 키워드로 타입 결정
     final path = routePath.toLowerCase();
-
-    if (path.contains('totebox') || path.contains('tote')) {
+    if (path.contains('scan')) {
       return ReqType.scan;
     }
     return ReqType.scan; // 기본값
@@ -44,29 +46,18 @@ enum ReqType {
 @RoutePage()
 class BasicScreen extends StatefulWidget {
   final String? reqType; // 라우트 파라미터로 받는 스캔 타입 (경로에서 :reqType)
-  final ReqType? directReqType; // 직접 지정하는 스캔 타입 (우선순위 높음)
-  final Function()? onScanPressed; // 스캔 버튼 클릭 시 콜백
+  final Function()? onButtonPressed; // 버튼 클릭 시 콜백
 
-  const BasicScreen({
-    super.key,
-    @pathParam this.reqType, // 라우트에서 받는 파라미터
-    this.directReqType,
-    this.onScanPressed,
-  });
+  const BasicScreen({super.key, @pathParam this.reqType, this.onButtonPressed});
 
   /// 실제 사용할 스캔 타입을 결정
   ReqType getEffectiveScanType(BuildContext context) {
-    // 1. 직접 지정된 scanType이 있으면 우선 사용
-    if (directReqType != null) {
-      return directReqType!;
-    }
-
-    // 2. 라우트 파라미터에서 결정
+    // 1. 라우트 파라미터에서 결정
     if (reqType != null) {
       return ReqType.fromParameter(reqType!);
     }
 
-    // 3. 현재 라우트 경로에서 결정
+    // 2. 현재 라우트 경로에서 결정
     try {
       final routePath = context.routeData.path;
       return ReqType.fromRoute(routePath);
@@ -160,7 +151,7 @@ class _BasicScreenState extends State<BasicScreen> {
       width: buttonWidth,
       height: buttonHeight,
       child: ElevatedButton(
-        onPressed: _isLoading ? null : _handleQRScan,
+        onPressed: _isLoading ? null : _handleButton,
         child: _isLoading
             ? const SizedBox(
                 width: 20.0,
@@ -196,8 +187,8 @@ class _BasicScreenState extends State<BasicScreen> {
     );
   }
 
-  /// QR 스캔 처리 메서드
-  Future<void> _handleQRScan() async {
+  /// 버튼 처리 메서드
+  Future<void> _handleButton() async {
     // 에러 메시지 초기화
     setState(() {
       _errorMessage = null;
@@ -206,25 +197,41 @@ class _BasicScreenState extends State<BasicScreen> {
 
     try {
       // 콜백이 제공된 경우 콜백 실행
-      if (widget.onScanPressed != null) {
-        await widget.onScanPressed!();
+      if (widget.onButtonPressed != null) {
+        await widget.onButtonPressed!();
       } else {
-        // 기본 QR 스캔 로직
-        // TODO: QR 스캔 기능 구현
-        // 예: 카메라 권한 요청, QR 스캐너 라이브러리 사용 등
-        await Future.delayed(const Duration(seconds: 2)); // 임시 딜레이
+        // 현재 ReqType에 따른 처리
+        final currentType = widget.getEffectiveScanType(context);
+
+        if (currentType == ReqType.scan) {
+          // 토트박스 스캔 API 호출
+          await _handleToteBoxScan();
+        } else {
+          // TODO: 다른 스캔 기능 구현
+          await Future.delayed(const Duration(seconds: 2)); // 임시 딜레이
+        }
       }
 
       // 성공 시 처리
       if (mounted) {
         // TODO: 스캔 결과에 따른 네비게이션 처리
-        print('QR 스캔이 완료되었습니다.');
+        print('스캔이 완료되었습니다.');
       }
     } catch (e) {
       // 에러 처리
       if (mounted) {
+        String errorMessage = '스캔 중 오류가 발생했습니다.';
+
+        if (e is ApiException) {
+          errorMessage = e.message;
+        } else if (e is NetworkException) {
+          errorMessage = e.message;
+        } else if (e is ServerException) {
+          errorMessage = e.message;
+        }
+
         setState(() {
-          _errorMessage = 'QR 스캔 중 오류가 발생했습니다: ${e.toString()}';
+          _errorMessage = errorMessage;
         });
       }
     } finally {
@@ -235,5 +242,26 @@ class _BasicScreenState extends State<BasicScreen> {
         });
       }
     }
+  }
+
+  /// 토트박스 스캔 처리
+  Future<void> _handleToteBoxScan() async {
+    // 저장된 사용자 정보 가져오기
+    final userInfo = await UserStorageService.getUserInfo();
+    final workType = userInfo['workType'] ?? 'IB';
+    final workerId = userInfo['workerId'] ?? '1234';
+    final toteId = 'TOTE-001';
+
+    final result = await WorkerApiService.scanToteBox(
+      workType,
+      workerId,
+      toteId,
+    );
+
+    // 성공적으로 스캔된 경우 응답 데이터 처리
+    print('토트박스 스캔 성공: $result');
+
+    // TODO: 스캔 결과에 따른 다음 화면으로 이동
+    // 예: 물품 리스트 화면으로 이동
   }
 }
